@@ -1,0 +1,21 @@
+dsh-chat
+Copyright (c) 2026 ilumiaZ
+
+本项目的客户端界面与协议实现来自 deepseek-ai/chat-demo：
+
+  https://github.com/deepseek-ai/chat-demo
+  Copyright (c) 2026 DeepSeek
+  Licensed under the MIT License (见 LICENSE)
+
+上游部分按 MIT 协议原样使用，未做修改的部分保留其原始版权声明。
+`app/` 目录即上游 v0.1.4 的完整源码副本，具体版本与改动见 UPSTREAM.md。
+
+本仓库新增的部分（Capacitor 包装、构建流程）同样以 MIT 协议发布。
+
+---
+
+This product includes software developed by DeepSeek
+(https://github.com/deepseek-ai/chat-demo), licensed under the MIT License.
+
+The MIT License text is reproduced in LICENSE and is also distributed inside the
+APK at `assets/public/LICENSE`.

@@ -1,0 +1,12 @@
+{
+  "appId": "io.github.ilumiaz.dshchat",
+  "appName": "DSH Chat",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#ffffff"
+  }
+}
