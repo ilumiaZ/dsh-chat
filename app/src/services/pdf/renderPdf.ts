@@ -1,12 +1,28 @@
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist'
+import type * as PdfJs from 'pdfjs-dist'
 
-// worker 由构建流程拷到站点根目录，见 rspack.config.ts
-GlobalWorkerOptions.workerSrc = 'pdf.worker.min.mjs'
+type PdfJsModule = typeof PdfJs
 
 /** 与 120 DPI 等价；再高也会被服务端缩到约 1300×1300，白费时间和内存 */
 const SCALE = 120 / 72
 /** 单请求最多 28 张图：每张封顶 1024 token，加上 system 与工具声明仍在 32K 以内 */
 export const MAX_PDF_PAGES = 28
+
+let loading: Promise<PdfJsModule> | null = null
+
+/**
+ * 动态载入 pdf.js 的 legacy 构建：体积大，而且在旧 WebView 上初始化可能直接抛错，
+ * 静态引入会让整个应用白屏。改成按需加载后，最坏情况只是 PDF 转换失败。
+ */
+const loadPdfJs = () => {
+  loading ??= (async () => {
+    // @ts-ignore legacy 构建没有单独的类型声明
+    const module = (await import('pdfjs-dist/legacy/build/pdf.mjs')) as PdfJsModule
+    // worker 由构建流程拷到站点根目录，见 rspack.config.ts
+    module.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.mjs'
+    return module
+  })()
+  return loading
+}
 
 /**
  * 把 PDF 按页光栅化成 JPEG。
@@ -17,8 +33,9 @@ export const renderPdfToImages = async (
   file: File,
   onProgress?: (done: number, total: number) => void
 ): Promise<{ files: File[]; pages: number; truncated: boolean }> => {
+  const pdfjs = await loadPdfJs()
   const data = new Uint8Array(await file.arrayBuffer())
-  const loadingTask = getDocument({ data })
+  const loadingTask = pdfjs.getDocument({ data })
   const doc = await loadingTask.promise
   try {
     const pages = doc.numPages

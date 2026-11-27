@@ -86,7 +86,7 @@ export const createConfig = ({
         { from: path.resolve(root, 'LICENSE'), to: 'LICENSE', toType: 'file' },
         // pdf.js 的 worker 不进主 bundle，拷到站点根目录由 GlobalWorkerOptions 指定
         {
-          from: path.resolve(root, 'node_modules/pdfjs-dist/build/pdf.worker.min.mjs'),
+          from: path.resolve(root, 'node_modules/pdfjs-dist/legacy/build/pdf.worker.min.mjs'),
           to: 'pdf.worker.min.mjs',
           toType: 'file',
         },
