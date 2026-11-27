@@ -1,7 +1,7 @@
 import { PDFDocument } from 'pdf-lib'
 
-/** 目标每份的页数：服务端对单条消息里的文档有 32K token 上限，12 页留了足够余量 */
-const PAGES_PER_PART = 12
+/** 目标每份的页数：扫描版讲义约 2.4K token/页，8 页约 19K，留出余量 */
+const PAGES_PER_PART = 8
 /** 超过这个体积就考虑拆分，即使页数不多（图文混排的页面 token 更密） */
 const SPLIT_SIZE_MB = 4
 /** 单请求最多引用 20 个文档，拆出来的份数不超过这个数 */

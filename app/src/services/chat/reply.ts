@@ -316,14 +316,25 @@ export const toRequestMessages = (
       previousReminder = reminder
     }
   }
-  for (const [user, reply] of getContextRounds(history)) {
-    // 历史提问没有文字、附件也都没有 serverId 时，提问为空，连同回答一起省略。
-    if (!user.content && toFileBlocks(user.files).length === 0) {
-      continue
+  // 服务端对请求里的文档总量有 32K token 上限，历史轮次的文档不再回传：
+  // 只保留「最近一条带附件的提问」，也就是当前正在讲的那一节。
+  const rounds = getContextRounds(history)
+  let latestFilesRound = -1
+  for (let index = rounds.length - 1; index >= 0; index -= 1) {
+    if (toFileBlocks(rounds[index][0].files).length > 0) {
+      latestFilesRound = index
+      break
+    }
+  }
+  rounds.forEach(([user, reply], index) => {
+    const files = index === latestFilesRound ? user.files : []
+    // 历史提问没有文字、附件也都不回传时，提问为空，连同回答一起省略。
+    if (!user.content && toFileBlocks(files).length === 0) {
+      return
     }
     appendReminder(reply.latestReminder)
-    messages.push(toUserParam(user), toAssistantParam(reply))
-  }
+    messages.push(toUserParam({ ...user, files }), toAssistantParam(reply))
+  })
   appendReminder(latestReminder)
   messages.push(toUserParam(question))
   if (prefix?.prefix) {
