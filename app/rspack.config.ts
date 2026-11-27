@@ -82,7 +82,15 @@ export const createConfig = ({
     }),
     new rspack.DefinePlugin({ __API_ORIGIN__: JSON.stringify(apiOrigin) }),
     new rspack.CopyRspackPlugin({
-      patterns: [{ from: path.resolve(root, 'LICENSE'), to: 'LICENSE', toType: 'file' }],
+      patterns: [
+        { from: path.resolve(root, 'LICENSE'), to: 'LICENSE', toType: 'file' },
+        // pdf.js 的 worker 不进主 bundle，拷到站点根目录由 GlobalWorkerOptions 指定
+        {
+          from: path.resolve(root, 'node_modules/pdfjs-dist/build/pdf.worker.min.mjs'),
+          to: 'pdf.worker.min.mjs',
+          toType: 'file',
+        },
+      ],
     }),
   ],
   performance: { hints: false },

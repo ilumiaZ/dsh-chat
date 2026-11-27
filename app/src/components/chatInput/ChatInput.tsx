@@ -27,8 +27,7 @@ import { ensureApiKey } from '../settings/settingsDialogState.js'
 import { DragMask, useFileDrop } from './DragMask.js'
 import { showToast } from '../base/toastState.js'
 import { ACCEPT, useUploads } from '../../services/attachments.js'
-import { splitAttachments } from '../../services/pdf/splitPdf.js'
-import { setPendingParts, takeNextPart, usePendingParts } from '../../services/pdf/pendingParts.js'
+import { renderPdfToImages, MAX_PDF_PAGES } from '../../services/pdf/renderPdf.js'
 import { DraftAttachments } from './DraftAttachments.js'
 import { useVoiceInput } from './useVoiceInput.js'
 import { VoiceButton } from './VoiceButton.js'
@@ -55,7 +54,6 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
   const importingHistory = useChatStore((state) => state.importingHistory)
   const isMobile = useIsMobile()
   const search = useSettings((state) => state.search)
-  const pendingCount = usePendingParts((state) => state.files.length)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const togglesRef = useRef<HTMLDivElement>(null)
@@ -83,34 +81,31 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
     }
     const apiKey = useSettings.getState().apiKey ?? ''
     void (async () => {
-      // 大 PDF 先在本地按页拆开，绕开服务端对带文档请求的 32K token 上限
-      const prepared = await splitAttachments(files)
-      if (prepared.length > files.length) {
-        // 一次只能带一段：先挂第一段，其余留给「下一节」
-        setPendingParts(prepared.slice(1))
-        showToast({ key: 'pdfSplitDone', params: { count: prepared.length } })
-        addDraftFiles(sessionId, prepared.slice(0, 1), apiKey)
-        return
+      // PDF 在本地按页光栅化成图片再上传：文档通道有 32K token 上限，
+      // 而图片每张封顶 1024 token，一页一张既便宜又可预测
+      const prepared: File[] = []
+      for (const file of files) {
+        if (!file.name.toLowerCase().endsWith('.pdf')) {
+          prepared.push(file)
+          continue
+        }
+        showToast({ key: 'pdfRendering' })
+        try {
+          const rendered = await renderPdfToImages(file)
+          prepared.push(...rendered.files)
+          if (rendered.truncated) {
+            showToast({ key: 'pdfTooManyPages', params: { max: MAX_PDF_PAGES, total: rendered.pages } })
+          }
+        } catch {
+          showToast({ key: 'pdfRenderFailed' })
+          prepared.push(file)
+        }
       }
       const error = addDraftFiles(sessionId, prepared, apiKey)
       if (error) {
         showToast(error)
       }
     })()
-  }
-
-  const addNextPart = () => {
-    if (useChatStore.getState().importingHistory || !ensureApiKey()) {
-      return
-    }
-    const next = takeNextPart()
-    if (!next) {
-      return
-    }
-    const error = addDraftFiles(sessionId, [next], useSettings.getState().apiKey ?? '')
-    if (error) {
-      showToast(error)
-    }
   }
   const retryFile = useCallback(
     (id: string) => {
@@ -255,18 +250,6 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
               <span className={styles.toggleLabel}>{t('search')}</span>
             </button>
           </Tooltip>
-          {pendingCount > 0 ? (
-            <button
-              type="button"
-              className={clsx(styles.toggle, styles.selected)}
-              aria-label={t('pdfNextPart')}
-              onClick={addNextPart}
-            >
-              <span className={styles.toggleLabel}>
-                {t('pdfNextPart')} ({pendingCount})
-              </span>
-            </button>
-          ) : null}
         </div>
         <div className={styles.right}>
           <VoiceButton

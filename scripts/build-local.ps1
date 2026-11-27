@@ -77,6 +77,6 @@ try {
 $apk = Join-Path $root 'android\app\build\outputs\apk\debug\app-debug.apk'
 $out = Join-Path $root 'out'
 New-Item -ItemType Directory -Force -Path $out | Out-Null
-$name = 'dsh-chat-1.4-debug.apk'
+$name = 'dsh-chat-1.5-debug.apk'
 Copy-Item $apk (Join-Path $out $name) -Force
 Write-Host ("==> 完成：out\$name  ({0:N1} MB)" -f ((Get-Item $apk).Length / 1MB)) -ForegroundColor Green
