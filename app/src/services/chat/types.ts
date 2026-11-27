@@ -79,6 +79,8 @@ export type AssistantMessage = MessageBranch & {
   createdAt: number
   /** 未记录模型时为 null，续写使用当前默认模型。 */
   model: ChatModel | null
+  /** 本轮使用的思考强度；缺省按 high 处理 */
+  effort?: 'low' | 'high' | 'max'
   /** 请求时是否开启深度思考 */
   thinking?: boolean
   /** 请求时是否声明 deepseek_web_search；关闭时仍声明 deepseek_read_url */

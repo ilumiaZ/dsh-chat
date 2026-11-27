@@ -42,6 +42,12 @@ gh auth refresh -h github.com -s workflow
 结构上：`app/` 是上游 chat-demo 源码，`pnpm build` 产出静态站点；静态站点复制到 `www/`，
 由 Capacitor 打进 APK；`android/` 由 `npx cap add android` 生成，不进版本库。
 
+## 相对上游的改动
+
+- **模型选择**：`deepseek-flash` / `deepseek-v4-pro`。选 v4-pro 时不声明任何服务端工具（该模型不支持搜索、文件与图片解析）。
+- **思考强度**：低 / 高 / 最高，走 Anthropic 格式的 `output_config.effort`，仅在开启深度思考时发送。
+- **图片预览**：上游用 `target=_blank` 打开图片，在 Android WebView 里会停在空白页且退不出来。改成应用内覆盖层，返回键可关；外链交给 `@capacitor/browser`。
+
 ## 路线图
 
 - **M1**（当前）：Capacitor 壳 + APK，纯单机

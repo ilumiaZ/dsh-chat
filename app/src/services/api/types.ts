@@ -172,11 +172,16 @@ export type DeepseekReadUrlTool = {
   name: 'deepseek_read_url'
 }
 
+/** 思考强度；Anthropic 格式下通过 output_config.effort 传入，缺省按 high 处理 */
+export type Effort = 'low' | 'high' | 'max'
+
 export type CreateMessageRequest = {
   model: ChatModel
   system: string
   messages: MessageParam[]
   thinking: { type: 'enabled' | 'disabled' }
+  /** 仅在思考模式下有意义；服务端在联网/安全审核开启时会忽略部分采样参数，但保留 effort */
+  output_config?: { effort: Effort }
   tools: (DeepseekWebSearchTool | DeepseekReadUrlTool)[]
   safety_check: { level: 'high' }
   title?: { enabled: boolean }

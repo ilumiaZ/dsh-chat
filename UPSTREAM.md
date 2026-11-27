@@ -17,7 +17,8 @@
 
 | 日期 | 文件 | 改动 |
 |---|---|---|
-| — | — | M1 阶段无客户端改动 |
+| 2026-11-27 | `services/settings.ts`、`services/api/types.ts`、`services/chat/types.ts`、`services/chat/store.ts`、`components/settings/SettingsDialog.tsx`、`i18n/{zh,en}.ts` | 新增模型选择（`deepseek-flash` / `deepseek-v4-pro`）与思考强度（`low`/`high`/`max`，通过 Anthropic 格式的 `output_config.effort` 传入）；选择 v4-pro 时不声明任何服务端工具 |
+| 2026-11-27 | `main.tsx`、`components/files/PreviewOverlay.tsx`、`PreviewOverlay.module.css` | 接管 `target=_blank`：图片走应用内预览（返回键可关），外链交给 `@capacitor/browser`。修复上游用新窗口打开图片时 WebView 停在空白页、无法退出的问题 |
 
 ## 升级上游
 

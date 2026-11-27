@@ -1,0 +1,62 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(56px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+  background: rgba(0, 0, 0, 0.92);
+}
+
+.close {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top));
+  right: calc(12px + env(safe-area-inset-right));
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.close:active {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.fallback {
+  max-width: 320px;
+  padding: 20px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  text-align: center;
+}
+
+.fileName {
+  font-size: 15px;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.hint {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: 0.75;
+}

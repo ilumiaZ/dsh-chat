@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { ChatModel, Effort } from './api/types.js'
 import type { TtsVoice } from './api/speech.js'
 import { normalizeLocation, type UserLocation } from './location.js'
 
@@ -17,6 +18,10 @@ type Settings = {
   thinking: boolean
   search: boolean
   siderCollapsed: boolean
+  /** 默认 deepseek-flash；v4-pro 不支持联网搜索、文件与图片解析 */
+  model: ChatModel
+  /** 思考强度，仅在开启深度思考时随请求发送 */
+  effort: Effort
 }
 
 const KEYS = {
@@ -28,6 +33,8 @@ const KEYS = {
   thinking: 'chat-demo:thinking',
   search: 'chat-demo:search',
   siderCollapsed: 'chat-demo:sider-collapsed',
+  model: 'chat-demo:model',
+  effort: 'chat-demo:effort',
 } as const
 
 const read = (key: string) => {
@@ -96,6 +103,8 @@ export const useSettings = create<Settings>(() => ({
   thinking: read(KEYS.thinking) === 'true',
   search: read(KEYS.search) === 'true',
   siderCollapsed: read(KEYS.siderCollapsed) === 'true',
+  model: read(KEYS.model) === 'deepseek-v4-pro' ? 'deepseek-v4-pro' : 'deepseek-flash',
+  effort: read(KEYS.effort) === 'low' || read(KEYS.effort) === 'max' ? (read(KEYS.effort) as Effort) : 'high',
 }))
 
 export const setLocale = (locale: Locale) => {
@@ -132,6 +141,16 @@ export const setThinking = (thinking: boolean) => {
 export const setSearch = (search: boolean) => {
   write(KEYS.search, String(search))
   useSettings.setState({ search })
+}
+
+export const setModel = (model: ChatModel) => {
+  write(KEYS.model, model)
+  useSettings.setState({ model })
+}
+
+export const setEffort = (effort: Effort) => {
+  write(KEYS.effort, effort)
+  useSettings.setState({ effort })
 }
 
 export const setSiderCollapsed = (siderCollapsed: boolean) => {

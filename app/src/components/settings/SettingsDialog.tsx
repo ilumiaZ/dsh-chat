@@ -21,13 +21,16 @@ import { useChatStore } from '../../services/chat/store.js'
 import { regionCodes, getRegionName, provinces } from '../../services/location.js'
 import {
   isChineseBrowser,
+  setEffort,
   setLocale,
   setLocation,
+  setModel,
   setThemePreference,
   setTtsVoice,
   useSettings,
   type ThemePreference,
 } from '../../services/settings.js'
+import type { ChatModel, Effort } from '../../services/api/types.js'
 import { useTranslate, type TranslationKey, type TranslationMessage } from '../../i18n/index.js'
 import { Button } from '../base/Button.js'
 import { Modal } from '../base/Modal.js'
@@ -102,6 +105,8 @@ const SettingsContent = ({
         <div role="tabpanel" className={styles.content}>
           {section === 'general' ? (
             <>
+              <ModelSetting />
+              <EffortSetting />
               <ThemeSetting />
               <LocaleSetting />
               <TtsVoiceSetting />
@@ -291,6 +296,57 @@ const LocaleSetting = () => {
             { value: 'en-US', label: t('settingsLocaleEnUS'), lang: 'en' },
           ]}
           onChange={setLocale}
+        />
+      }
+    />
+  )
+}
+
+/** 模型选择：Flash 支持全部应用能力（搜索、文件、朗读），V4 Pro 只能纯推理。 */
+const ModelSetting = () => {
+  const t = useTranslate()
+  const model = useSettings((state) => state.model)
+  return (
+    <SettingCell
+      label={t('settingsModel')}
+      description={model === 'deepseek-v4-pro' ? t('settingsModelProHint') : undefined}
+      status={null}
+      action={
+        <Select
+          ariaLabel={t('settingsModel')}
+          value={model}
+          options={[
+            { value: 'deepseek-flash', label: t('settingsModelFlash') },
+            { value: 'deepseek-v4-pro', label: t('settingsModelPro') },
+          ]}
+          onChange={(value) => setModel(value as ChatModel)}
+        />
+      }
+    />
+  )
+}
+
+/** 思考强度：低 / 高 / 最高，仅在开启深度思考时随请求发送。 */
+const EffortSetting = () => {
+  const t = useTranslate()
+  const effort = useSettings((state) => state.effort)
+  const thinking = useSettings((state) => state.thinking)
+  return (
+    <SettingCell
+      label={t('settingsEffort')}
+      description={thinking ? undefined : t('settingsEffortHint')}
+      status={null}
+      action={
+        <Select
+          ariaLabel={t('settingsEffort')}
+          value={effort}
+          disabled={!thinking}
+          options={[
+            { value: 'low', label: t('settingsEffortLow') },
+            { value: 'high', label: t('settingsEffortHigh') },
+            { value: 'max', label: t('settingsEffortMax') },
+          ]}
+          onChange={(value) => setEffort(value as Effort)}
         />
       }
     />

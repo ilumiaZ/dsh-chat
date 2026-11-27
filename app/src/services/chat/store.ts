@@ -52,8 +52,14 @@ const FILE_RETRY_LIMIT = 2
 /** 退避基数，第 n 次重试等待 2^n 倍；连续失败达到上限就放弃，把原始报错展示出来 */
 const FILE_RETRY_BASE_DELAY = 1000
 
-/** 阅读链接始终开启，智能搜索开关控制是否另行声明搜索工具（含边想边搜）。 */
-const serverTools = (search: boolean): CreateMessageRequest['tools'] => {
+/**
+ * 阅读链接始终开启，智能搜索开关控制是否另行声明搜索工具（含边想边搜）。
+ * deepseek-v4-pro 不支持服务端工具，选择该模型时不声明任何工具。
+ */
+const serverTools = (search: boolean, model: ChatModel): CreateMessageRequest['tools'] => {
+  if (model !== 'deepseek-flash') {
+    return []
+  }
   const tools: CreateMessageRequest['tools'] = [
     { type: 'deepseek_read_url', name: 'deepseek_read_url' },
   ]
@@ -262,12 +268,13 @@ export const bindChatPersistence = () => {
 
 /** 按当前开关创建回复：深度思考对应 thinking，智能搜索控制 deepseek_web_search。 */
 const createReply = (): AssistantMessage => {
-  const { thinking, search } = useSettings.getState()
+  const { thinking, search, model, effort } = useSettings.getState()
   return {
     id: createId(),
     role: 'assistant',
     createdAt: Date.now(),
-    model: MODEL,
+    model,
+    effort,
     thinking,
     search,
     prefix: true,
@@ -714,11 +721,12 @@ export const continueReply = (sessionId: string, messageId: string) => {
   ) {
     return
   }
-  const { thinking, search } = useSettings.getState()
+  const { thinking, search, effort } = useSettings.getState()
   const reply: AssistantMessage = {
     ...previous,
     // 未记录请求配置的回复，续写时使用默认模型和当前开关。
     model: previous.model ?? MODEL,
+    effort: previous.effort ?? effort,
     thinking: previous.thinking ?? thinking,
     search: previous.search ?? search,
     status: 'pending',
@@ -1021,15 +1029,18 @@ const streamReply = async (sessionId: string, initial: AssistantMessage, request
           initial.thinking ?? false,
           latestReminder
         )
+        const model = initial.model ?? MODEL
         const events = streamMessage(
           useSettings.getState().apiKey ?? '',
           {
-            model: initial.model ?? MODEL,
+            model,
             system: SYSTEM_PROMPT,
             messages,
             thinking: { type: initial.thinking ? 'enabled' : 'disabled' },
+            // effort 只在思考模式下有意义，关闭思考时不发送
+            ...(initial.thinking ? { output_config: { effort: initial.effort ?? 'high' } } : {}),
             safety_check: SAFETY_CHECK,
-            tools: serverTools(initial.search ?? false),
+            tools: serverTools(initial.search ?? false, model),
             ...(titleRequests.has(controller) ? { title: { enabled: true } } : {}),
           },
           controller.signal
