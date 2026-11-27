@@ -27,6 +27,7 @@ import { ensureApiKey } from '../settings/settingsDialogState.js'
 import { DragMask, useFileDrop } from './DragMask.js'
 import { showToast } from '../base/toastState.js'
 import { ACCEPT, useUploads } from '../../services/attachments.js'
+import { splitAttachments } from '../../services/pdf/splitPdf.js'
 import { DraftAttachments } from './DraftAttachments.js'
 import { useVoiceInput } from './useVoiceInput.js'
 import { VoiceButton } from './VoiceButton.js'
@@ -78,10 +79,18 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
     if (files.length === 0 || useChatStore.getState().importingHistory || !ensureApiKey()) {
       return
     }
-    const error = addDraftFiles(sessionId, files, useSettings.getState().apiKey ?? '')
-    if (error) {
-      showToast(error)
-    }
+    const apiKey = useSettings.getState().apiKey ?? ''
+    void (async () => {
+      // 大 PDF 先在本地按页拆开，绕开服务端对单条消息里文档的 32K token 上限
+      const prepared = await splitAttachments(files)
+      if (prepared.length > files.length) {
+        showToast({ key: 'pdfSplitDone', params: { count: prepared.length } })
+      }
+      const error = addDraftFiles(sessionId, prepared, apiKey)
+      if (error) {
+        showToast(error)
+      }
+    })()
   }
   const retryFile = useCallback(
     (id: string) => {

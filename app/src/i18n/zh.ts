@@ -102,6 +102,7 @@ export const zh = {
   settingsEffortMax: '最高',
   settingsEffortHint: '开启深度思考后可调',
   previewUnsupported: '手机端暂不支持预览这个文件，可以回到对话里就它提问',
+  pdfSplitDone: '体量较大，已按页拆成 {count} 份分别上传',
   settingDialogAsideGeneralOptionLabel: '通用设置',
   settingDialogAsideDataOptionLabel: '数据管理',
   avatarMenuSettingsDialogThemeItemLabel: '主题',

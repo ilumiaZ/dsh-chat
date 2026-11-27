@@ -107,6 +107,7 @@ export const en = {
   settingsEffortMax: 'Max',
   settingsEffortHint: 'Adjustable when DeepThink is on',
   previewUnsupported: 'This file cannot be previewed on the phone; you can still ask about it in the chat',
+  pdfSplitDone: 'Large file — split into {count} parts by page and uploaded separately',
   settingDialogAsideGeneralOptionLabel: 'General',
   settingDialogAsideDataOptionLabel: 'Data',
   avatarMenuSettingsDialogThemeItemLabel: 'Theme',

@@ -47,6 +47,7 @@ gh auth refresh -h github.com -s workflow
 - **模型选择**：`deepseek-flash` / `deepseek-v4-pro`。选 v4-pro 时不声明任何服务端工具（该模型不支持搜索、文件与图片解析）。
 - **思考强度**：低 / 高 / 最高，走 Anthropic 格式的 `output_config.effort`，仅在开启深度思考时发送。
 - **图片预览**：上游用 `target=_blank` 打开图片，在 Android WebView 里会停在空白页且退不出来。改成应用内覆盖层，返回键可关；外链交给 `@capacitor/browser`。
+- **大 PDF 自动分页**：超过 4 MB 的 PDF 在上传前用 pdf-lib 按页拆成多份（每份约 12 页），绕开服务端「单条消息里的文档 32K token」的限制。移动端手动切 PDF 不现实，所以放在应用里做。
 
 ## 路线图
 

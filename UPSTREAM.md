@@ -19,6 +19,7 @@
 |---|---|---|
 | 2026-11-27 | `services/settings.ts`、`services/api/types.ts`、`services/chat/types.ts`、`services/chat/store.ts`、`components/settings/SettingsDialog.tsx`、`i18n/{zh,en}.ts` | 新增模型选择（`deepseek-flash` / `deepseek-v4-pro`）与思考强度（`low`/`high`/`max`，通过 Anthropic 格式的 `output_config.effort` 传入）；选择 v4-pro 时不声明任何服务端工具 |
 | 2026-11-27 | `main.tsx`、`components/files/PreviewOverlay.tsx`、`PreviewOverlay.module.css` | 接管 `target=_blank`：图片走应用内预览（返回键可关），外链交给 `@capacitor/browser`。修复上游用新窗口打开图片时 WebView 停在空白页、无法退出的问题 |
+| 2026-11-27 | `services/pdf/splitPdf.ts`、`components/chatInput/ChatInput.tsx`、`package.json` | 上传超过 4 MB 的 PDF 时在本地用 pdf-lib 按页拆成多份（每份约 12 页），绕开服务端「单条消息里的文档 32K token」上限；拆分失败时退回原文件 |
 
 ## 升级上游
 
