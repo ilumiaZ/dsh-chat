@@ -6,10 +6,8 @@
 
 ## 装到手机
 
-1. 打开本仓库的 [Actions](../../actions/workflows/android.yml) 页面，选最新一次成功的 `android-apk` 运行。
-2. 拉到底部 **Artifacts**，下载 `dsh-chat-debug-apk`。
-3. 解压得到 `dsh-chat-debug.apk`，传到手机安装（需要允许"安装未知来源应用"）。
-4. 首次打开 → 设置 → 填入 DeepSeek API Key（[在这里申请](https://platform.deepseek.com/api_keys)）。
+1. 取 `out/dsh-chat-0.1.0-debug.apk`（或自己构建，见下），传到手机安装（需要允许"安装未知来源应用"）。
+2. 首次打开 → 设置 → 填入 DeepSeek API Key（[在这里申请](https://platform.deepseek.com/api_keys)）。
 
 > 目前是 debug 签名，用来验证形态。等进入日常使用前会换成固定 keystore，否则覆盖安装会被系统拒绝、只能卸载重装（那样会清掉本地聊天记录）。
 
@@ -21,21 +19,28 @@
 
 ## 构建
 
-不在本地装任何 Node 或 Android 环境，全部在 GitHub Actions 上跑：
+两条路，目前走的是第一条：
 
-- `app/` 是上游 chat-demo 的源码（v0.1.4，未改动），`pnpm build` 产出静态站点
-- 静态站点复制到 `www/`，由 Capacitor 打进 APK
-- `android/` 由 `npx cap add android` 在 CI 里生成，不进版本库
+**本地（当前可用）** —— 便携工具链放在 `%LOCALAPPDATA%\dsh-chat\toolchain`，不污染系统 PATH：
 
-本地要复现的话：
+```powershell
+.\scripts\build-local.ps1
+```
+
+细节和两个 Windows 特有的绕路（`rm -rf`、国内镜像）见 [scripts/BUILD-LOCAL.md](scripts/BUILD-LOCAL.md)。
+
+**GitHub Actions（已就绪，待启用）** —— `.github/workflows/android.yml` 会在 push 到 `main` 时构建
+并上传 APK。这个文件目前推不上去：GitHub 要求 token 带 `workflow` 权限才能写
+`.github/workflows/`，当前 `gh` 登录的 token 没有。补一条命令即可启用：
 
 ```bash
-cd app && pnpm install --frozen-lockfile && pnpm build
-cd .. && mkdir -p www && cp -R app/dist/. www/
-npm install
-npx cap add android && npx cap sync android
-cd android && ./gradlew assembleDebug
+gh auth refresh -h github.com -s workflow
 ```
+
+之后把该文件提交上去，Actions 就会接管构建，本机只需要 `git push`。
+
+结构上：`app/` 是上游 chat-demo 源码，`pnpm build` 产出静态站点；静态站点复制到 `www/`，
+由 Capacitor 打进 APK；`android/` 由 `npx cap add android` 生成，不进版本库。
 
 ## 路线图
 
